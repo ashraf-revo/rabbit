@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: rabbit
+  cloud:
+    kubernetes:
+      config:
+        sources:
+        - name: ${spring.application.name}
+        - name: default
+    stream:
+      bindings:
+        input:
+          destination: rabbit.queue
+          group: s1
+          contentType: application/json
+        output:
+          destination: rabbit.queue
+          contentType: application/json
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ["*"]
+  endpoint:
+    health:
+      show-details: always
+info:
+  app:
+    name: ${spring.application.name}
+logging:
+  file: /tmp/${spring.application.name}.log
+  level:
+    org.springframework: debug

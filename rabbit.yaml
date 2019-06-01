@@ -1,0 +1,77 @@
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: reader
+rules:
+- apiGroups: [""]
+  resources: ["routes","pods","pods/log","pods/status","services","services/proxy","configmaps","endpoints","secrets","serviceaccounts","namespaces","namespaces/status","resourcequotas/status","events","bindings","replicationcontrollers","persistentvolumeclaims"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["extensions"]
+  resources: ["ingresses"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "watch", "list"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: reader
+roleRef:
+  kind: Role
+  name: reader
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: default
+  apiGroup: ""
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbit
+data:
+  rabbit.yaml: |-
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbit
+spec:
+  selector:
+    matchLabels:
+      run: rabbit
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: rabbit
+    spec:
+      containers:
+      - name: rabbit
+        image: ashraf1abdelrasool/rabbit:0.0.1-SNAPSHOT
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbit
+  labels:
+    run: rabbit
+spec:
+  ports:
+  - name: rabbit
+    protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer
+  selector:
+    run: rabbit
