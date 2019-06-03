@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Processor;
@@ -31,6 +32,9 @@ public class RabbitApplication {
         SpringApplication.run(RabbitApplication.class, args);
     }
 
+    @Autowired
+    private DiscoveryClient discoveryClient;
+
     @Bean
     public FluxProcessor<Long, Long> processor() {
         return ReplayProcessor.create(0);
@@ -45,7 +49,8 @@ public class RabbitApplication {
     public RouterFunction<ServerResponse> routerFunction(Flux<Long> longFlux) {
         return route(GET("/"), it -> ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
-                .body(longFlux, Long.class));
+                .body(longFlux, Long.class))
+                .andRoute(GET("/services"), it -> ok().body(Flux.fromIterable(discoveryClient.getServices()), String.class));
     }
 
     @Autowired

@@ -8,8 +8,8 @@ data:
     spring:
       rabbitmq:
         username: admin
-        password: 1f2d1e2e67df
-        host: rabbitmq.default.svc.cluster.local
+        password: admin
+        host: ${RABBITMQ_SERVICE_HOST}
         virtual-host: admin
 ---
 apiVersion: apps/v1
@@ -29,10 +29,9 @@ spec:
       containers:
       - name: rabbit
         image: ashraf1abdelrasool/rabbit:0.0.1-SNAPSHOT
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
-
 ---
 apiVersion: v1
 kind: Service
